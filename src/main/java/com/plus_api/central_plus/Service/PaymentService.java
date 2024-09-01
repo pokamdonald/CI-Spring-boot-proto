@@ -26,6 +26,10 @@ public class PaymentService {
 
     // Create a new payment
     public PaymentModel createPayment(PaymentModel paymentModel) {
+        // Ensure that totalAmount and leftAmount are set before saving
+        paymentModel.setTotalAmount(paymentModel.getAmount() * Double.parseDouble(paymentModel.getQuantity()));
+        paymentModel.setLeftAmount(paymentModel.getTotalAmount() - paymentModel.getReceiveAmount());
+
         return paymentRepository.save(paymentModel);
     }
 
@@ -34,10 +38,16 @@ public class PaymentService {
         PaymentModel paymentModel = paymentRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Payment not found with id: " + id));
 
-        paymentModel.setPaymentMethod(paymentDetails.getPaymentMethod()); // Updated method name
+        paymentModel.setPaymentMethod(paymentDetails.getPaymentMethod());  // Validate method in controller
         paymentModel.setAmount(paymentDetails.getAmount());
         paymentModel.setPaymentDate(paymentDetails.getPaymentDate());
         paymentModel.setStatus(paymentDetails.getStatus());
+
+        // Update quantity, totalAmount, receiveAmount, and leftAmount
+        paymentModel.setQuantity(paymentDetails.getQuantity());
+        paymentModel.setTotalAmount(paymentDetails.getAmount() * Double.parseDouble(paymentDetails.getQuantity()));
+        paymentModel.setReceiveAmount(paymentDetails.getReceiveAmount());
+        paymentModel.setLeftAmount(paymentModel.getTotalAmount() - paymentModel.getReceiveAmount());
 
         return paymentRepository.save(paymentModel);
     }
